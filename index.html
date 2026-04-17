@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ຫ້ອງເນື້ອເພງ</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=Noto+Sans+Lao:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+  :root {
+    --bg: #0f0e11;
+    --surface: #1a1820;
+    --surface2: #231f2e;
+    --accent: #c084fc;
+    --accent2: #818cf8;
+    --text: #f1eeff;
+    --text2: #a89cc8;
+    --text3: #6b5f8a;
+    --border: rgba(192,132,252,0.15);
+    --lo: #fbbf24;
+    --th: #34d399;
+    --en: #60a5fa;
+    --radius: 14px;
+    --danger: #f87171;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Sarabun','Noto Sans Lao',sans-serif; min-height: 100vh; }
+
+  .header { padding: 2rem 1.25rem 1rem; text-align: center; border-bottom: 1px solid var(--border); }
+  .header h1 { font-size: 1.6rem; font-weight: 600; background: linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .header p { font-size: 0.8rem; color: var(--text3); margin-top: 4px; }
+
+  .nav { display: flex; padding: 0.75rem 1.25rem; gap: 8px; }
+  .nav-btn { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--text2); font-family: inherit; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
+  .nav-btn.active,.nav-btn:hover { background: var(--surface2); color: var(--accent); border-color: var(--accent); }
+
+  .search-wrap { padding: 0 1.25rem 0.75rem; }
+  .search-wrap input { width: 100%; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--text3); }
+
+  .lang-filter { display: flex; gap: 6px; padding: 0 1.25rem 1rem; flex-wrap: wrap; }
+  .lang-chip { padding: 5px 14px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-family: inherit; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+  .lang-chip.active-all { border-color: var(--accent); color: var(--accent); background: rgba(192,132,252,0.1); }
+  .lang-chip.active-lo  { border-color: var(--lo); color: var(--lo); background: rgba(251,191,36,0.1); }
+  .lang-chip.active-th  { border-color: var(--th); color: var(--th); background: rgba(52,211,153,0.1); }
+  .lang-chip.active-en  { border-color: var(--en); color: var(--en); background: rgba(96,165,250,0.1); }
+
+  .stats { display: flex; gap: 12px; padding: 0.5rem 1.25rem 1rem; }
+  .stat { flex: 1; border-radius: 10px; padding: 10px 12px; text-align: center; border: 1px solid; }
+  .stat .num { font-size: 1.2rem; font-weight: 600; }
+  .stat .lbl { font-size: 0.7rem; margin-top: 2px; }
+  .stat-all  { background: rgba(192,132,252,0.08); border-color: rgba(192,132,252,0.35); }
+  .stat-all  .num { color: #c084fc; }
+  .stat-all  .lbl { color: #9b6fd4; }
+  .stat-lo   { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.35); }
+  .stat-lo   .num { color: #fbbf24; }
+  .stat-lo   .lbl { color: #b8892a; }
+  .stat-th   { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.35); }
+  .stat-th   .num { color: #34d399; }
+  .stat-th   .lbl { color: #239e6e; }
+  .stat-en   { background: rgba(96,165,250,0.08); border-color: rgba(96,165,250,0.35); }
+  .stat-en   .num { color: #60a5fa; }
+  .stat-en   .lbl { color: #3d7dc9; }
+
+  .song-list { padding: 0 1.25rem; display: flex; flex-direction: column; gap: 8px; }
+  .song-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center; }
+  .song-card:hover { border-color: var(--accent); background: var(--surface2); }
+  .song-info .title { font-size: 1rem; font-weight: 500; color: var(--text); }
+  .song-info .artist { font-size: 0.8rem; color: var(--text3); margin-top: 2px; }
+  .lang-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .lang-dot.lo { background: var(--lo); }
+  .lang-dot.th { background: var(--th); }
+  .lang-dot.en { background: var(--en); }
+
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text3); }
+  .empty .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  .detail-wrap { padding: 0 1.25rem; display: none; }
+  .back-btn { display: flex; align-items: center; gap: 6px; color: var(--text3); font-size: 0.85rem; cursor: pointer; margin-bottom: 1.25rem; background: none; border: none; font-family: inherit; padding: 0; }
+  .back-btn:hover { color: var(--accent); }
+  .detail-title { font-size: 1.4rem; font-weight: 600; color: var(--text); }
+  .detail-meta { display: flex; gap: 8px; align-items: center; margin-top: 6px; margin-bottom: 1rem; }
+  .detail-artist { font-size: 0.85rem; color: var(--text3); }
+  .lang-tag { font-size: 0.75rem; padding: 3px 10px; border-radius: 999px; }
+  .lang-tag.lo { background: rgba(251,191,36,0.15); color: var(--lo); }
+  .lang-tag.th { background: rgba(52,211,153,0.15); color: var(--th); }
+  .lang-tag.en { background: rgba(96,165,250,0.15); color: var(--en); }
+  .lyrics-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; font-size: 1rem; line-height: 2; color: var(--text); white-space: pre-wrap; font-weight: 300; }
+  .detail-actions { display: flex; gap: 8px; margin-top: 1rem; margin-bottom: 2rem; }
+  .btn { padding: 10px 20px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--text2); font-family: inherit; font-size: 0.85rem; cursor: pointer; transition: all 0.2s; flex: 1; }
+  .btn:hover { background: var(--surface2); }
+  .btn.danger:hover { border-color: var(--danger); color: var(--danger); }
+  .btn.primary { border-color: var(--accent); color: var(--accent); }
+  .btn.primary:hover { background: rgba(192,132,252,0.1); }
+
+  .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: flex-end; justify-content: center; }
+  .modal-backdrop.open { display: flex; }
+  .modal { background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; padding: 1.5rem 1.25rem 2rem; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border); border-bottom: none; }
+  .modal h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text); }
+  .form-group { margin-bottom: 1rem; }
+  .form-group label { display: block; font-size: 0.8rem; color: var(--text3); margin-bottom: 5px; }
+  .form-group input,.form-group textarea,.form-group select { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: inherit; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .form-group input:focus,.form-group textarea:focus,.form-group select:focus { border-color: var(--accent); }
+  .form-group textarea { height: 180px; resize: vertical; line-height: 1.8; }
+  .form-group select option { background: var(--surface); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 1.25rem; }
+
+  /* Upload */
+  .drop-zone { border: 2px dashed rgba(192,132,252,0.3); border-radius: var(--radius); padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 1rem; }
+  .drop-zone:hover,.drop-zone.dragover { border-color: var(--accent); background: rgba(192,132,252,0.05); }
+  .dz-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .dz-text { font-size: 0.9rem; color: var(--text2); }
+  .dz-sub { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+  #file-input { display: none; }
+
+  .file-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; max-height: 38vh; overflow-y: auto; }
+  .file-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; }
+  .file-item-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .file-fname { font-size: 0.82rem; color: var(--text2); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-remove { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 1rem; padding: 0; line-height: 1; flex-shrink: 0; }
+  .file-remove:hover { color: var(--danger); }
+  .fi-input { width: 100%; margin-bottom: 6px; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Sarabun','Noto Sans Lao',sans-serif; font-size: 0.82rem; outline: none; }
+  .fi-select { width: 100%; padding: 7px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-family: 'Sarabun','Noto Sans Lao',sans-serif; font-size: 0.82rem; outline: none; }
+  .fi-select option { background: var(--surface); }
+  .file-status { font-size: 0.75rem; margin-top: 6px; }
+  .file-status.ok { color: var(--th); }
+  .file-status.err { color: var(--danger); }
+  .file-status.loading { color: var(--text3); }
+
+  .progress-wrap { margin-bottom: 1rem; display: none; }
+  .progress-label { font-size: 0.8rem; color: var(--text3); margin-bottom: 6px; }
+  .progress-bar { height: 4px; background: var(--surface2); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg,var(--accent),var(--accent2)); border-radius: 999px; transition: width 0.3s; width: 0%; }
+
+  .fab-group { position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: 10px; align-items: flex-end; z-index: 50; }
+  .fab-row { display: flex; align-items: center; gap: 10px; }
+  .fab-label { font-size: 0.72rem; color: var(--text3); }
+  .fab { width: 52px; height: 52px; border-radius: 50%; border: none; color: white; font-size: 1.4rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+  .fab.main { background: linear-gradient(135deg,var(--accent),var(--accent2)); box-shadow: 0 4px 20px rgba(192,132,252,0.4); }
+  .fab.secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--accent); font-size: 1.2rem; }
+  .fab:hover { transform: scale(1.08); }
+
+  .toast { position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 10px 20px; border-radius: 999px; font-size: 0.85rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  @media (min-width: 600px) {
+    .header { padding: 2.5rem 2rem 1.25rem; }
+    .nav,.search-wrap,.lang-filter,.song-list,.detail-wrap,.stats { padding-left: 2rem; padding-right: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎵 ຫ້ອງເນື້ອເພງ</h1>
+  <p>ຄັງເນື້ອເພງສ່ວນຕົວ · Lao · Thai · English</p>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('songs')">📋 เพลงทั้งหมด</button>
+  <button class="nav-btn" onclick="showSection('recent')">🕐 เพิ่มล่าสุด</button>
+</div>
+
+<div id="section-songs">
+  <div class="stats">
+    <div class="stat stat-all"><div class="num" id="count-all">0</div><div class="lbl">ທັງໝົດ</div></div>
+    <div class="stat stat-lo"><div class="num" id="count-lo">0</div><div class="lbl">ລາວ</div></div>
+    <div class="stat stat-th"><div class="num" id="count-th">0</div><div class="lbl">ໄທ</div></div>
+    <div class="stat stat-en"><div class="num" id="count-en">0</div><div class="lbl">English</div></div>
+  </div>
+  <div class="search-wrap">
+    <input type="search" id="search-input" placeholder="🔍 ค้นหาชื่อเพลง ศิลปิน หรือเนื้อเพลง..." oninput="renderList()" />
+  </div>
+  <div class="lang-filter">
+    <button class="lang-chip active-all" id="chip-all" onclick="setLang('all')">ทั้งหมด</button>
+    <button class="lang-chip" id="chip-lo" onclick="setLang('lo')">ລາວ</button>
+    <button class="lang-chip" id="chip-th" onclick="setLang('th')">ไทย</button>
+    <button class="lang-chip" id="chip-en" onclick="setLang('en')">English</button>
+  </div>
+  <div class="song-list" id="song-list"></div>
+</div>
+
+<div id="section-recent" style="display:none">
+  <div class="song-list" id="recent-list" style="padding:0 1.25rem;margin-top:0.5rem;"></div>
+</div>
+
+<div class="detail-wrap" id="detail-view">
+  <button class="back-btn" onclick="closeDetail()">← กลับ</button>
+  <div class="detail-title" id="d-title"></div>
+  <div class="detail-meta">
+    <span class="detail-artist" id="d-artist"></span>
+    <span class="lang-tag" id="d-lang"></span>
+  </div>
+  <div class="lyrics-box" id="d-lyrics"></div>
+  <div class="detail-actions">
+    <button class="btn primary" onclick="openEditModal()">✏️ แก้ไข</button>
+    <button class="btn danger" onclick="deleteSong()">🗑️ ลบ</button>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3 id="modal-title">➕ เพิ่มเพลงใหม่</h3>
+    <div class="form-group"><label>ชื่อเพลง *</label><input type="text" id="f-title" placeholder="ชื่อเพลง..." /></div>
+    <div class="form-group"><label>ศิลปิน</label><input type="text" id="f-artist" placeholder="ชื่อศิลปิน..." /></div>
+    <div class="form-group"><label>ภาษา *</label>
+      <select id="f-lang">
+        <option value="lo">ລາວ (ลาว)</option>
+        <option value="th">ไทย</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+    <div class="form-group"><label>เนื้อเพลง *</label><textarea id="f-lyrics" placeholder="วางเนื้อเพลงที่นี่..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn primary" onclick="saveSong()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-backdrop" id="upload-modal">
+  <div class="modal">
+    <h3>📂 นำเข้าไฟล์ Word หลายไฟล์</h3>
+    <p style="font-size:0.8rem;color:var(--text3);margin-bottom:1rem;">รองรับ .docx · ชื่อไฟล์จะกลายเป็นชื่อเพลงอัตโนมัติ · ตรวจจับภาษาอัตโนมัติ</p>
+
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="dz-icon">📁</div>
+      <div class="dz-text">แตะเพื่อเลือกไฟล์ หรือลากวางที่นี่</div>
+      <div class="dz-sub">เลือกได้หลายไฟล์พร้อมกัน · .docx เท่านั้น</div>
+    </div>
+    <input type="file" id="file-input" accept=".docx" multiple onchange="handleFiles(this.files)" />
+
+    <div class="file-list" id="file-list"></div>
+
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label" id="progress-label">กำลังนำเข้า...</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn" onclick="closeUploadModal()">ยกเลิก</button>
+      <button class="btn primary" id="import-btn" style="display:none" onclick="importAll()">📥 นำเข้าทั้งหมด</button>
+    </div>
+  </div>
+</div>
+
+<div class="fab-group" id="fab-group">
+  <div class="fab-row">
+    <span class="fab-label">นำเข้าไฟล์ Word</span>
+    <button class="fab secondary" onclick="openUploadModal()">📂</button>
+  </div>
+  <button class="fab main" onclick="openAddModal()">+</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SK = 'lyrics_v2';
+let songs = [], currentLang = 'all', currentDetailId = null, editingId = null;
+let pendingFiles = [];
+
+function load() {
+  try { songs = JSON.parse(localStorage.getItem(SK)||'[]'); } catch { songs=[]; }
+  if (!songs.length) {
+    songs = [
+      {id:1,title:'ລົມຫາຍໃຈ',artist:'ຕົວຢ່າງ',lang:'lo',lyrics:'ລົມຫາຍໃຈຂອງເຈົ້າ\nຄືດັ່ງສາຍລົມອ່ອນ\nທີ່ໄຫຼຜ່ານໃຈຂ້ອຍ\nໂດຍບໍ່ຮູ້ຕົວ',createdAt:Date.now()-3000},
+      {id:2,title:'สายลมและแสงแดด',artist:'ตัวอย่าง',lang:'th',lyrics:'สายลมพัดผ่านมา\nพาความหวังให้ใจ\nแสงแดดส่องสว่าง\nทำให้ใจอบอุ่น',createdAt:Date.now()-2000},
+      {id:3,title:'Midnight Rain',artist:'Example',lang:'en',lyrics:'Midnight rain falls softly down\nOn the quiet sleeping town',createdAt:Date.now()-1000},
+    ];
+    save();
+  }
+}
+function save() { localStorage.setItem(SK,JSON.stringify(songs)); updateStats(); }
+function updateStats() {
+  document.getElementById('count-all').textContent=songs.length;
+  document.getElementById('count-lo').textContent=songs.filter(s=>s.lang==='lo').length;
+  document.getElementById('count-th').textContent=songs.filter(s=>s.lang==='th').length;
+  document.getElementById('count-en').textContent=songs.filter(s=>s.lang==='en').length;
+}
+function setLang(l) {
+  currentLang=l;
+  ['all','lo','th','en'].forEach(x=>{ document.getElementById('chip-'+x).className='lang-chip'+(x===l?' active-'+x:''); });
+  renderList();
+}
+function renderList() {
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const f=songs.filter(s=>{
+    if(currentLang!=='all'&&s.lang!==currentLang)return false;
+    if(q)return s.title.toLowerCase().includes(q)||(s.artist||'').toLowerCase().includes(q)||s.lyrics.toLowerCase().includes(q);
+    return true;
+  }).sort((a,b)=>b.createdAt-a.createdAt);
+  const el=document.getElementById('song-list');
+  if(!f.length){el.innerHTML='<div class="empty"><div class="icon">🎵</div><div>ยังไม่มีเพลง<br>กด + หรือ 📂 เพื่อเพิ่มเพลง</div></div>';return;}
+  el.innerHTML=f.map(s=>`<div class="song-card" onclick="openDetail(${s.id})"><div class="song-info"><div class="title">${esc(s.title)}</div><div class="artist">${esc(s.artist||'ไม่ระบุศิลปิน')}</div></div><div class="lang-dot ${s.lang}"></div></div>`).join('');
+}
+function renderRecent() {
+  const f=[...songs].sort((a,b)=>b.createdAt-a.createdAt).slice(0,10);
+  const el=document.getElementById('recent-list');
+  if(!f.length){el.innerHTML='<div class="empty"><div class="icon">🎵</div><div>ยังไม่มีเพลง</div></div>';return;}
+  el.innerHTML=f.map(s=>`<div class="song-card" onclick="openDetail(${s.id})"><div class="song-info"><div class="title">${esc(s.title)}</div><div class="artist">${esc(s.artist||'ไม่ระบุศิลปิน')}</div></div><div class="lang-dot ${s.lang}"></div></div>`).join('');
+}
+function openDetail(id) {
+  const s=songs.find(x=>x.id===id);if(!s)return;
+  currentDetailId=id;
+  const ll={lo:'ລາວ',th:'ไทย',en:'English'};
+  document.getElementById('d-title').textContent=s.title;
+  document.getElementById('d-artist').textContent=s.artist||'ไม่ระบุศิลปิน';
+  const lt=document.getElementById('d-lang');lt.textContent=ll[s.lang];lt.className='lang-tag '+s.lang;
+  document.getElementById('d-lyrics').textContent=s.lyrics;
+  document.getElementById('section-songs').style.display='none';
+  document.getElementById('section-recent').style.display='none';
+  document.getElementById('detail-view').style.display='block';
+  document.getElementById('fab-group').style.display='none';
+  document.querySelector('.nav').style.display='none';
+}
+function closeDetail() {
+  document.getElementById('detail-view').style.display='none';
+  document.getElementById('section-songs').style.display='block';
+  document.getElementById('fab-group').style.display='flex';
+  document.querySelector('.nav').style.display='flex';
+  currentDetailId=null;
+}
+function openAddModal() {
+  editingId=null;
+  document.getElementById('modal-title').textContent='➕ เพิ่มเพลงใหม่';
+  ['f-title','f-artist','f-lyrics'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-lang').value='lo';
+  document.getElementById('modal').classList.add('open');
+}
+function openEditModal() {
+  const s=songs.find(x=>x.id===currentDetailId);if(!s)return;
+  editingId=s.id;
+  document.getElementById('modal-title').textContent='✏️ แก้ไขเพลง';
+  document.getElementById('f-title').value=s.title;
+  document.getElementById('f-artist').value=s.artist||'';
+  document.getElementById('f-lang').value=s.lang;
+  document.getElementById('f-lyrics').value=s.lyrics;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function saveSong() {
+  const title=document.getElementById('f-title').value.trim();
+  const artist=document.getElementById('f-artist').value.trim();
+  const lang=document.getElementById('f-lang').value;
+  const lyrics=document.getElementById('f-lyrics').value.trim();
+  if(!title||!lyrics){showToast('กรุณากรอกชื่อเพลงและเนื้อเพลง');return;}
+  if(editingId){
+    const i=songs.findIndex(s=>s.id===editingId);
+    if(i>-1)songs[i]={...songs[i],title,artist,lang,lyrics};
+    save();renderList();closeModal();openDetail(editingId);showToast('บันทึกแล้ว ✓');
+  } else {
+    songs.push({id:Date.now(),title,artist,lang,lyrics,createdAt:Date.now()});
+    save();renderList();closeModal();showToast('เพิ่มเพลงแล้ว ✓');
+  }
+}
+function deleteSong() {
+  if(!confirm('ต้องการลบเพลงนี้?'))return;
+  songs=songs.filter(s=>s.id!==currentDetailId);
+  save();renderList();closeDetail();showToast('ลบเพลงแล้ว');
+}
+
+/* ── Upload ── */
+function openUploadModal() {
+  pendingFiles=[];
+  document.getElementById('file-list').innerHTML='';
+  document.getElementById('import-btn').style.display='none';
+  document.getElementById('progress-wrap').style.display='none';
+  document.getElementById('progress-fill').style.width='0%';
+  document.getElementById('file-input').value='';
+  document.getElementById('upload-modal').classList.add('open');
+}
+function closeUploadModal(){document.getElementById('upload-modal').classList.remove('open');pendingFiles=[];}
+
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');handleFiles(e.dataTransfer.files);});
+
+async function handleFiles(fileList) {
+  const valid=Array.from(fileList).filter(f=>f.name.toLowerCase().endsWith('.docx'));
+  if(!valid.length){showToast('กรุณาเลือกไฟล์ .docx เท่านั้น');return;}
+  for(const f of valid){
+    if(pendingFiles.find(p=>p.file.name===f.name))continue;
+    const name=f.name.replace(/\.docx$/i,'');
+    pendingFiles.push({file:f,name,lang:detectLang(name),text:null,status:'loading'});
+  }
+  renderFileList();
+  document.getElementById('import-btn').style.display='none';
+  await Promise.all(pendingFiles.map(async(p,i)=>{
+    if(p.text!==null)return;
+    try{
+      const buf=await p.file.arrayBuffer();
+      const res=await mammoth.extractRawText({arrayBuffer:buf});
+      p.text=res.value.trim();
+      p.status=p.text?'ok':'err';
+    }catch{p.status='err';p.text='';}
+    updateFileItem(i);
+  }));
+  const hasOk=pendingFiles.some(p=>p.status==='ok');
+  document.getElementById('import-btn').style.display=hasOk?'block':'none';
+}
+
+function detectLang(name){
+  if(/[ກ-ໝ]/u.test(name))return 'lo';
+  if(/[ก-๙]/u.test(name))return 'th';
+  return 'en';
+}
+
+function renderFileList(){
+  document.getElementById('file-list').innerHTML=pendingFiles.map((_,i)=>fileItemHTML(i)).join('');
+}
+function updateFileItem(i){
+  const el=document.getElementById('fi-'+i);
+  if(el)el.outerHTML=fileItemHTML(i);
+}
+function fileItemHTML(i){
+  const p=pendingFiles[i];
+  const stTxt=p.status==='loading'?'⏳ กำลังอ่าน...':p.status==='ok'?`✓ อ่านสำเร็จ · ${p.text.length} ตัวอักษร`:'✗ อ่านไม่ได้ ลองพิมพ์เนื้อเพลงเอง';
+  const stCls=p.status==='loading'?'loading':p.status==='ok'?'ok':'err';
+  return `<div class="file-item" id="fi-${i}">
+    <div class="file-item-top">
+      <span class="file-fname" title="${esc(p.file.name)}">📄 ${esc(p.file.name)}</span>
+      <button class="file-remove" onclick="removeFile(${i})">✕</button>
+    </div>
+    <input class="fi-input" type="text" value="${esc(p.name)}" placeholder="ชื่อเพลง" oninput="pendingFiles[${i}].name=this.value" />
+    <select class="fi-select" onchange="pendingFiles[${i}].lang=this.value">
+      <option value="lo" ${p.lang==='lo'?'selected':''}>ລາວ (ลาว)</option>
+      <option value="th" ${p.lang==='th'?'selected':''}>ไทย</option>
+      <option value="en" ${p.lang==='en'?'selected':''}>English</option>
+    </select>
+    <div class="file-status ${stCls}">${stTxt}</div>
+  </div>`;
+}
+function removeFile(i){
+  pendingFiles.splice(i,1);
+  renderFileList();
+  document.getElementById('import-btn').style.display=pendingFiles.some(p=>p.status==='ok')?'block':'none';
+}
+
+async function importAll(){
+  const toImport=pendingFiles.filter(p=>p.status==='ok'&&p.name.trim()&&p.text);
+  if(!toImport.length){showToast('ไม่มีไฟล์ที่พร้อมนำเข้า');return;}
+  const pw=document.getElementById('progress-wrap');
+  const pf=document.getElementById('progress-fill');
+  const pl=document.getElementById('progress-label');
+  pw.style.display='block';
+  let done=0;
+  for(const p of toImport){
+    songs.push({id:Date.now()+done,title:p.name.trim(),artist:'',lang:p.lang,lyrics:p.text,createdAt:Date.now()+done});
+    done++;
+    pf.style.width=Math.round((done/toImport.length)*100)+'%';
+    pl.textContent=`นำเข้า ${done}/${toImport.length} ไฟล์...`;
+    await new Promise(r=>setTimeout(r,60));
+  }
+  save();renderList();
+  showToast(`นำเข้าสำเร็จ ${done} เพลง ✓`);
+  closeUploadModal();
+}
+
+function showSection(sec){
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',(sec==='songs'&&i===0)||(sec==='recent'&&i===1)));
+  document.getElementById('section-songs').style.display=sec==='songs'?'block':'none';
+  document.getElementById('section-recent').style.display=sec==='recent'?'block':'none';
+  if(sec==='recent')renderRecent();
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===document.getElementById('modal'))closeModal();});
+document.getElementById('upload-modal').addEventListener('click',e=>{if(e.target===document.getElementById('upload-modal'))closeUploadModal();});
+
+load();renderList();updateStats();
+</script>
+</body>
+</html>
